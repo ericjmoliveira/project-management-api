@@ -1,0 +1,96 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  firstName String   @map("first_name")
+  lastName  String   @map("last_name")
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  ownedProjects  Project[]
+  joinedProjects ProjectMember[]
+
+  @@map("users")
+}
+
+model Project {
+  id          String    @id @default(cuid())
+  ownerId     String    @map("owner_id")
+  name        String
+  description String?
+  status      Status    @default(PENDING)
+  dueDate     DateTime?
+  startedAt   DateTime? @map("started_at")
+  completedAt DateTime? @map("completed_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  owner   User?           @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  tasks   Task[]
+  members ProjectMember[]
+
+  @@map("projects")
+}
+
+model ProjectMember {
+  id        String    @id @default(cuid())
+  projectId String    @map("project_id")
+  userId    String    @map("user_id")
+  role      Role
+  status    Status    @default(PENDING)
+  joinedAt  DateTime? @map("joined_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  project       Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user          User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  assignedTasks Task[]
+
+  @@map("project_members")
+}
+
+model Task {
+  id               String    @id @default(cuid())
+  projectId        String    @map("project_id")
+  memberAssignedId String?   @map("member_assigned_id")
+  description      String
+  priority         Priority
+  status           Status    @default(PENDING)
+  dueDate          DateTime? @map("due_date")
+  startedAt        DateTime? @map("started_at")
+  completedAt      DateTime? @map("completed_at")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  project Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  member  ProjectMember? @relation(fields: [memberAssignedId], references: [id], onDelete: Cascade)
+
+  @@map("tasks")
+}
+
+enum Status {
+  PENDING
+  ACTIVE
+  COMPLETED
+}
+
+enum Role {
+  OWNER
+  ADMIN
+  CONTRIBUTOR
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+}
