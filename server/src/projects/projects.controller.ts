@@ -3,6 +3,8 @@ import { Controller, Post, Body, Request, UseGuards, HttpCode, Param } from '@ne
 import { ProjectsService } from './projects.service';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { AuthGuard } from 'src/auth/auth.guard';
+import { AddTaskDto } from './dto/add-task.dto';
+import { UpdateProjectDto } from './dto/update-project.dto';
 
 @Controller('projects')
 @UseGuards(AuthGuard)
@@ -33,6 +35,20 @@ export class ProjectsController {
     return {
       data,
       message: 'Project successfully started.'
+    };
+  }
+
+  @Post(':id/tasks')
+  async addTask(
+    @Request() request: { user: { sub: string } },
+    @Param() params: { projectId: string },
+    @Body() addTaskDto: AddTaskDto
+  ) {
+    const data = await this.projectsService.addTask(params.projectId, request.user.sub, addTaskDto);
+
+    return {
+      data,
+      message: 'Task successfully added to the project.'
     };
   }
 }

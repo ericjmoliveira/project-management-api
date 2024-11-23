@@ -7,6 +7,8 @@ import {
 
 import { CreateProjectDto } from './dto/create-project.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { AddTaskDto } from './dto/add-task.dto';
+import { Priority } from '@prisma/client';
 
 @Injectable()
 export class ProjectsService {
@@ -59,7 +61,8 @@ export class ProjectsService {
     const isProjectOwner = await this.prismaService.projectMember.findFirst({
       where: {
         projectId: project.id,
-        userId
+        userId,
+        role: 'OWNER'
       }
     });
 
@@ -83,6 +86,43 @@ export class ProjectsService {
 
     return {
       project: updatedProject
+    };
+  }
+
+  async addTask(projectId: string, userId: string, addTaskDto: AddTaskDto) {
+    const project = await this.prismaService.project.findFirst({
+      where: {
+        id: projectId
+      }
+    });
+
+    if (!project) {
+      throw new NotFoundException();
+    }
+
+    const isProjectOwnerOrAdmin = await this.prismaService.projectMember.findFirst({
+      where: {
+        projectId: project.id,
+        userId,
+        role: {
+          in: ['OWNER', 'ADMIN']
+        }
+      }
+    });
+
+    if (!isProjectOwnerOrAdmin) {
+      throw new ForbiddenException();
+    }
+
+    const task = await this.prismaService.task.create({
+      data: {
+        projectId: project.id,
+        ...addTaskDto
+      }
+    });
+
+    return {
+      task
     };
   }
 }
