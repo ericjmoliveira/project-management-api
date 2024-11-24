@@ -1,4 +1,4 @@
-import { Controller, UseGuards, Get, Request } from '@nestjs/common';
+import { Controller, UseGuards, Get, Post, HttpCode, Request, Param } from '@nestjs/common';
 
 import { UsersService } from './users.service';
 import { AuthGuard } from 'src/auth/auth.guard';
@@ -14,6 +14,19 @@ export class UsersController {
 
     return {
       data
+    };
+  }
+
+  @Post('invitations/:projectId')
+  @HttpCode(200)
+  async acceptProjectInvitation(
+    @Request() request: { user: { sub: string } },
+    @Param() params: { projectId: string }
+  ) {
+    await this.usersService.acceptProjectInvitation(request.user.sub, params.projectId);
+
+    return {
+      message: 'Project invitation successfully accepted.'
     };
   }
 }

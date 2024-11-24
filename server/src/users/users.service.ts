@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 
 import { PrismaService } from 'src/prisma/prisma.service';
 
@@ -29,5 +29,38 @@ export class UsersService {
     return {
       user
     };
+  }
+
+  async acceptProjectInvitation(userId: string, projectId: string) {
+    const project = await this.prismaService.project.findFirst({
+      where: {
+        id: projectId
+      }
+    });
+
+    if (!project) {
+      throw new NotFoundException();
+    }
+
+    const memberData = await this.prismaService.projectMember.findFirst({
+      where: {
+        projectId: project.id,
+        userId
+      }
+    });
+
+    if (memberData.joinedAt && memberData.status === 'ACTIVE') {
+      throw new ConflictException();
+    }
+
+    await this.prismaService.projectMember.update({
+      data: {
+        status: 'ACTIVE',
+        joinedAt: new Date()
+      },
+      where: {
+        id: memberData.id
+      }
+    });
   }
 }
