@@ -8,7 +8,8 @@ import {
 import { CreateProjectDto } from './dto/create-project.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { AddTaskDto } from './dto/add-task.dto';
-import { Priority } from '@prisma/client';
+import { InviteUsersDto } from './dto/invite-users.dto';
+import { Role } from '@prisma/client';
 
 @Injectable()
 export class ProjectsService {
@@ -124,5 +125,55 @@ export class ProjectsService {
     return {
       task
     };
+  }
+
+  async inviteUsers(projectId: string, userId: string, inviteUsersDto: InviteUsersDto) {
+    const project = await this.prismaService.project.findFirst({
+      where: {
+        id: projectId
+      }
+    });
+
+    if (!project) {
+      throw new NotFoundException();
+    }
+
+    const isProjectOwnerOrAdmin = await this.prismaService.projectMember.findFirst({
+      where: {
+        projectId: project.id,
+        userId,
+        role: {
+          in: ['OWNER', 'ADMIN']
+        }
+      }
+    });
+
+    if (!isProjectOwnerOrAdmin) {
+      throw new ForbiddenException();
+    }
+
+    const membersData = await this.prepareMembersData(project.id, inviteUsersDto.usersList);
+
+    await this.prismaService.projectMember.createMany({ data: membersData });
+  }
+
+  private async prepareMembersData(projectId: string, usersList: { email: string; role: Role }[]) {
+    return Promise.all(
+      usersList.map(async (user) => {
+        const foundUser = await this.prismaService.user.findUnique({
+          where: { email: user.email }
+        });
+
+        if (!foundUser) {
+          throw new NotFoundException();
+        }
+
+        return {
+          projectId,
+          userId: foundUser.id,
+          role: user.role
+        };
+      })
+    );
   }
 }

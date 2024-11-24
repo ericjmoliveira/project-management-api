@@ -5,6 +5,7 @@ import { CreateProjectDto } from './dto/create-project.dto';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { AddTaskDto } from './dto/add-task.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
+import { InviteUsersDto } from './dto/invite-users.dto';
 
 @Controller('projects')
 @UseGuards(AuthGuard)
@@ -49,6 +50,20 @@ export class ProjectsController {
     return {
       data,
       message: 'Task successfully added to the project.'
+    };
+  }
+
+  @Post(':id/invite')
+  @HttpCode(200)
+  async inviteUsers(
+    @Request() request: { user: { sub: string } },
+    @Param() params: { projectId: string },
+    @Body() inviteUsersDto: InviteUsersDto
+  ) {
+    await this.projectsService.inviteUsers(params.projectId, request.user.sub, inviteUsersDto);
+
+    return {
+      message: 'Invitations successfully sent.'
     };
   }
 }
