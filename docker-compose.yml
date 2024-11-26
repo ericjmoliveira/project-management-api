@@ -1,7 +1,7 @@
 services:
   db:
     image: postgres:latest
-    container_name: postgres
+    container_name: postgres-nest
     environment:
       - POSTGRES_USER=johndoe
       - POSTGRES_PASSWORD=randompassword
@@ -10,11 +10,5 @@ services:
       - '5432:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    networks:
-      - postgres_network
 volumes:
   postgres_data:
-    driver: local
-networks:
-  postgres_network:
-    driver: bridge
