@@ -10,6 +10,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { AddTaskDto } from './dto/add-task.dto';
 import { InviteUsersDto } from './dto/invite-users.dto';
 import { Role } from '@prisma/client';
+import { UpdateProjectDto } from './dto/update-project.dto';
 
 @Injectable()
 export class ProjectsService {
@@ -80,6 +81,41 @@ export class ProjectsService {
         startedAt: new Date(),
         status: 'ACTIVE'
       },
+      where: {
+        id: project.id
+      }
+    });
+
+    return {
+      project: updatedProject
+    };
+  }
+
+  async update(userId: string, projectId: string, updateProjectDto: UpdateProjectDto) {
+    const project = await this.prismaService.project.findFirst({
+      where: {
+        id: projectId
+      }
+    });
+
+    if (!project) {
+      throw new NotFoundException();
+    }
+
+    const isProjectOwnerOrAdmin = await this.prismaService.projectMember.findFirst({
+      where: {
+        projectId: project.id,
+        userId,
+        role: { in: ['OWNER', 'ADMIN'] }
+      }
+    });
+
+    if (!isProjectOwnerOrAdmin) {
+      throw new ForbiddenException();
+    }
+
+    const updatedProject = await this.prismaService.project.update({
+      data: updateProjectDto,
       where: {
         id: project.id
       }

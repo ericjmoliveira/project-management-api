@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Request, UseGuards, HttpCode, Param } from '@nestjs/common';
+import { Controller, Post, Body, Request, UseGuards, HttpCode, Param, Patch } from '@nestjs/common';
 
 import { ProjectsService } from './projects.service';
 import { CreateProjectDto } from './dto/create-project.dto';
@@ -36,6 +36,24 @@ export class ProjectsController {
     return {
       data,
       message: 'Project successfully started.'
+    };
+  }
+
+  @Patch(':id')
+  async update(
+    @Request() request: { user: { sub: string } },
+    @Param() params: { projectId: string },
+    @Body() updateProjectDto: UpdateProjectDto
+  ) {
+    const data = await this.projectsService.update(
+      request.user.sub,
+      params.projectId,
+      updateProjectDto
+    );
+
+    return {
+      data,
+      message: 'Project details successfully updated.'
     };
   }
 
