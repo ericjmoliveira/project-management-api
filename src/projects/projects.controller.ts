@@ -1,4 +1,14 @@
-import { Controller, Post, Body, Request, UseGuards, HttpCode, Param, Patch } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Request,
+  UseGuards,
+  HttpCode,
+  Param,
+  Patch,
+  Delete
+} from '@nestjs/common';
 
 import { ProjectsService } from './projects.service';
 import { CreateProjectDto } from './dto/create-project.dto';
@@ -6,6 +16,7 @@ import { AuthGuard } from 'src/auth/auth.guard';
 import { AddTaskDto } from './dto/add-task.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { InviteUsersDto } from './dto/invite-users.dto';
+import { UpdateMemberRoleDto } from './dto/update-member-role.dto';
 
 @Controller('projects')
 @UseGuards(AuthGuard)
@@ -42,14 +53,10 @@ export class ProjectsController {
   @Patch(':id')
   async update(
     @Request() request: { user: { sub: string } },
-    @Param() params: { projectId: string },
+    @Param() params: { id: string },
     @Body() updateProjectDto: UpdateProjectDto
   ) {
-    const data = await this.projectsService.update(
-      request.user.sub,
-      params.projectId,
-      updateProjectDto
-    );
+    const data = await this.projectsService.update(request.user.sub, params.id, updateProjectDto);
 
     return {
       data,
@@ -60,10 +67,10 @@ export class ProjectsController {
   @Post(':id/tasks')
   async addTask(
     @Request() request: { user: { sub: string } },
-    @Param() params: { projectId: string },
+    @Param() params: { id: string },
     @Body() addTaskDto: AddTaskDto
   ) {
-    const data = await this.projectsService.addTask(params.projectId, request.user.sub, addTaskDto);
+    const data = await this.projectsService.addTask(params.id, request.user.sub, addTaskDto);
 
     return {
       data,
@@ -75,13 +82,57 @@ export class ProjectsController {
   @HttpCode(200)
   async inviteUsers(
     @Request() request: { user: { sub: string } },
-    @Param() params: { projectId: string },
+    @Param() params: { id: string },
     @Body() inviteUsersDto: InviteUsersDto
   ) {
-    await this.projectsService.inviteUsers(params.projectId, request.user.sub, inviteUsersDto);
+    await this.projectsService.inviteUsers(params.id, request.user.sub, inviteUsersDto);
 
     return {
       message: 'Invitations successfully sent.'
+    };
+  }
+
+  @Patch(':id/members')
+  async updateMemberRole(
+    @Request() request: { user: { sub: string } },
+    @Param() params: { id: string },
+    @Body() updateMemberRoleDto: UpdateMemberRoleDto
+  ) {
+    const data = await this.projectsService.updateMemberRole(
+      params.id,
+      request.user.sub,
+      updateMemberRoleDto
+    );
+
+    return {
+      data,
+      message: 'Member role successfully updated.'
+    };
+  }
+
+  @Delete(':projectId/members/:memberId')
+  async removeMember(
+    @Request() request: { user: { sub: string } },
+    @Param() params: { projectId: string; memberId: string }
+  ) {
+    const data = await this.projectsService.removeMember(
+      params.projectId,
+      request.user.sub,
+      params.memberId
+    );
+
+    return {
+      message: 'Member successfully removed.'
+    };
+  }
+
+  @Delete(':id')
+  async delete(@Request() request: { user: { sub: string } }, @Param() params: { id: string }) {
+    const data = await this.projectsService.delete(params.id, request.user.sub);
+
+    return {
+      data,
+      message: 'Project successfully deleted.'
     };
   }
 }

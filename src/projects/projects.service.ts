@@ -11,6 +11,7 @@ import { AddTaskDto } from './dto/add-task.dto';
 import { InviteUsersDto } from './dto/invite-users.dto';
 import { Role } from '@prisma/client';
 import { UpdateProjectDto } from './dto/update-project.dto';
+import { UpdateMemberRoleDto } from './dto/update-member-role.dto';
 
 @Injectable()
 export class ProjectsService {
@@ -211,5 +212,126 @@ export class ProjectsService {
         };
       })
     );
+  }
+
+  async delete(projectId: string, userId: string) {
+    const project = await this.prismaService.project.findFirst({
+      where: {
+        id: projectId
+      }
+    });
+
+    if (!project) {
+      throw new NotFoundException();
+    }
+
+    const isProjectOwner = await this.prismaService.projectMember.findFirst({
+      where: {
+        projectId: project.id,
+        userId,
+        role: { in: ['OWNER', 'ADMIN'] }
+      }
+    });
+
+    if (!isProjectOwner) {
+      throw new ForbiddenException();
+    }
+
+    await this.prismaService.project.delete({
+      where: {
+        id: project.id
+      }
+    });
+  }
+
+  async updateMemberRole(
+    projectId: string,
+    userId: string,
+    updateMemberRoleDto: UpdateMemberRoleDto
+  ) {
+    const project = await this.prismaService.project.findFirst({
+      where: {
+        id: projectId
+      }
+    });
+
+    if (!project) {
+      throw new NotFoundException();
+    }
+
+    const isProjectOwner = await this.prismaService.projectMember.findFirst({
+      where: {
+        projectId: project.id,
+        userId,
+        role: { in: ['OWNER', 'ADMIN'] }
+      }
+    });
+
+    if (!isProjectOwner) {
+      throw new ForbiddenException();
+    }
+
+    const projectMember = await this.prismaService.projectMember.findFirst({
+      where: {
+        id: updateMemberRoleDto.memberId
+      }
+    });
+
+    if (!projectMember) {
+      throw new NotFoundException();
+    }
+
+    const updatedProjectMember = await this.prismaService.projectMember.update({
+      data: {
+        role: updateMemberRoleDto.newRole
+      },
+      where: {
+        id: projectMember.id
+      }
+    });
+
+    return {
+      projectMember: updatedProjectMember
+    };
+  }
+
+  async removeMember(projectId: string, userId: string, memberId: string) {
+    const project = await this.prismaService.project.findFirst({
+      where: {
+        id: projectId
+      }
+    });
+
+    if (!project) {
+      throw new NotFoundException();
+    }
+
+    const isProjectOwner = await this.prismaService.projectMember.findFirst({
+      where: {
+        projectId: project.id,
+        userId,
+        role: { in: ['OWNER', 'ADMIN'] }
+      }
+    });
+
+    if (!isProjectOwner) {
+      throw new ForbiddenException();
+    }
+
+    const projectMember = await this.prismaService.projectMember.findFirst({
+      where: {
+        id: memberId
+      }
+    });
+
+    if (!projectMember) {
+      throw new NotFoundException();
+    }
+
+    await this.prismaService.projectMember.delete({
+      where: {
+        id: memberId
+      }
+    });
   }
 }
