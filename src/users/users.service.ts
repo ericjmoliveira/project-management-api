@@ -1,6 +1,13 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException
+} from '@nestjs/common';
+import { compare, hash } from 'bcrypt';
 
 import { PrismaService } from 'src/prisma/prisma.service';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UsersService {
@@ -29,6 +36,70 @@ export class UsersService {
     return {
       user
     };
+  }
+
+  async getProjects(id: string) {
+    const user = await this.prismaService.user.findFirst({
+      where: {
+        id
+      }
+    });
+
+    if (!user) {
+      throw new NotFoundException();
+    }
+
+    const ownedProjects = await this.prismaService.project.findMany({
+      where: {
+        ownerId: id
+      }
+    });
+
+    const memberListing = await this.prismaService.projectMember.findMany({
+      where: {
+        userId: id,
+        role: { notIn: ['OWNER'] }
+      },
+      include: {
+        project: true
+      }
+    });
+
+    return {
+      ownedProjects,
+      joinedProjects: memberListing.map((project) => project.project)
+    };
+  }
+
+  async updatePassword(id: string, updateUserDto: UpdateUserDto) {
+    const user = await this.prismaService.user.findFirst({
+      where: {
+        id
+      }
+    });
+
+    if (!user) {
+      throw new NotFoundException();
+    }
+
+    const isPasswordCorrect = await compare(updateUserDto.currentPassword, user.password);
+
+    if (!isPasswordCorrect) {
+      throw new UnauthorizedException();
+    }
+
+    delete updateUserDto.currentPassword;
+
+    const hashPassword = await hash(updateUserDto.newPassword, 10);
+
+    await this.prismaService.user.update({
+      data: {
+        password: hashPassword
+      },
+      where: {
+        id
+      }
+    });
   }
 
   async acceptProjectInvitation(userId: string, projectId: string) {
