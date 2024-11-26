@@ -99,6 +99,7 @@ export class ProjectsController {
   }
 
   @Post(':projectId/tasks/:taskId/start')
+  @HttpCode(200)
   async startTask(
     @Request() request: { user: { sub: string } },
     @Param() params: { projectId: string; taskId: string }
@@ -111,6 +112,7 @@ export class ProjectsController {
   }
 
   @Post(':projectId/tasks/:taskId/complete')
+  @HttpCode(200)
   async completeTask(
     @Request() request: { user: { sub: string } },
     @Param() params: { projectId: string; taskId: string }

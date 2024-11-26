@@ -260,7 +260,7 @@ export class ProjectsService {
       throw new NotFoundException();
     }
 
-    const isProjectOwner = await this.prismaService.projectMember.findFirst({
+    const isProjectOwnerOrAdmin = await this.prismaService.projectMember.findFirst({
       where: {
         projectId: project.id,
         userId,
@@ -268,7 +268,7 @@ export class ProjectsService {
       }
     });
 
-    if (!isProjectOwner) {
+    if (!isProjectOwnerOrAdmin) {
       throw new ForbiddenException();
     }
 
@@ -307,7 +307,7 @@ export class ProjectsService {
       throw new NotFoundException();
     }
 
-    const isProjectOwner = await this.prismaService.projectMember.findFirst({
+    const isProjectOwnerOrAdmin = await this.prismaService.projectMember.findFirst({
       where: {
         projectId: project.id,
         userId,
@@ -315,7 +315,7 @@ export class ProjectsService {
       }
     });
 
-    if (!isProjectOwner) {
+    if (!isProjectOwnerOrAdmin) {
       throw new ForbiddenException();
     }
 
@@ -342,18 +342,173 @@ export class ProjectsService {
     userId: string,
     updateTaskDto: UpdateTaskDto
   ) {
-    // TODO: Add method implementation
+    const project = await this.prismaService.project.findFirst({
+      where: {
+        id: projectId
+      }
+    });
+
+    if (!project) {
+      throw new NotFoundException();
+    }
+
+    const isProjectOwnerOrAdmin = await this.prismaService.projectMember.findFirst({
+      where: {
+        projectId: project.id,
+        userId,
+        role: { in: ['OWNER', 'ADMIN'] }
+      }
+    });
+
+    if (!isProjectOwnerOrAdmin) {
+      throw new ForbiddenException();
+    }
+
+    const updatedTask = await this.prismaService.task.update({
+      data: updateTaskDto,
+      where: {
+        id: taskId
+      }
+    });
+
+    return {
+      task: updatedTask
+    };
   }
 
   async startTask(projectId: string, taskId: string, userId: string) {
-    // TODO: Add method implementation
+    const project = await this.prismaService.project.findFirst({
+      where: {
+        id: projectId
+      }
+    });
+
+    if (!project) {
+      throw new NotFoundException();
+    }
+
+    const isProjectOwnerOrAdmin = await this.prismaService.projectMember.findFirst({
+      where: {
+        projectId: project.id,
+        userId,
+        role: { in: ['OWNER', 'ADMIN'] }
+      }
+    });
+
+    if (!isProjectOwnerOrAdmin) {
+      throw new ForbiddenException();
+    }
+
+    const task = await this.prismaService.task.findFirst({
+      where: {
+        id: taskId
+      }
+    });
+
+    if (!task) {
+      throw new NotFoundException();
+    }
+
+    if (task.status !== 'PENDING') {
+      throw new ConflictException();
+    }
+
+    await this.prismaService.task.update({
+      data: {
+        startedAt: new Date(),
+        status: 'ACTIVE'
+      },
+      where: {
+        id: task.id
+      }
+    });
   }
 
   async completeTask(projectId: string, taskId: string, userId: string) {
-    // TODO: Add method implementation
+    const project = await this.prismaService.project.findFirst({
+      where: {
+        id: projectId
+      }
+    });
+
+    if (!project) {
+      throw new NotFoundException();
+    }
+
+    const isProjectOwnerOrAdmin = await this.prismaService.projectMember.findFirst({
+      where: {
+        projectId: project.id,
+        userId,
+        role: { in: ['OWNER', 'ADMIN'] }
+      }
+    });
+
+    if (!isProjectOwnerOrAdmin) {
+      throw new ForbiddenException();
+    }
+
+    const task = await this.prismaService.task.findFirst({
+      where: {
+        id: taskId
+      }
+    });
+
+    if (!task) {
+      throw new NotFoundException();
+    }
+
+    if (task.status === 'COMPLETED') {
+      throw new ConflictException();
+    }
+
+    await this.prismaService.task.update({
+      data: {
+        completedAt: new Date(),
+        status: 'COMPLETED'
+      },
+      where: {
+        id: task.id
+      }
+    });
   }
 
   async deleteTask(projectId: string, taskId: string, userId: string) {
-    // TODO: Add method implementation
+    const project = await this.prismaService.project.findFirst({
+      where: {
+        id: projectId
+      }
+    });
+
+    if (!project) {
+      throw new NotFoundException();
+    }
+
+    const isProjectOwnerOrAdmin = await this.prismaService.projectMember.findFirst({
+      where: {
+        projectId: project.id,
+        userId,
+        role: { in: ['OWNER', 'ADMIN'] }
+      }
+    });
+
+    if (!isProjectOwnerOrAdmin) {
+      throw new ForbiddenException();
+    }
+
+    const task = await this.prismaService.task.findFirst({
+      where: {
+        id: taskId
+      }
+    });
+
+    if (!task) {
+      throw new NotFoundException();
+    }
+
+    await this.prismaService.task.delete({
+      where: {
+        id: taskId
+      }
+    });
   }
 }
