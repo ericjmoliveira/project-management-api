@@ -4,14 +4,15 @@ import {
   Injectable,
   NotFoundException
 } from '@nestjs/common';
-
-import { CreateProjectDto } from './dto/create-project.dto';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { AddTaskDto } from './dto/add-task.dto';
-import { InviteUsersDto } from './dto/invite-users.dto';
 import { Role } from '@prisma/client';
+
+import { PrismaService } from 'src/prisma/prisma.service';
+import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
+import { InviteUsersDto } from './dto/invite-users.dto';
 import { UpdateMemberRoleDto } from './dto/update-member-role.dto';
+import { AddTaskDto } from './dto/add-task.dto';
+import { UpdateTaskDto } from './dto/update-task.dto';
 
 @Injectable()
 export class ProjectsService {
@@ -333,5 +334,26 @@ export class ProjectsService {
         id: memberId
       }
     });
+  }
+
+  async updateTask(
+    projectId: string,
+    taskId: string,
+    userId: string,
+    updateTaskDto: UpdateTaskDto
+  ) {
+    // TODO: Add method implementation
+  }
+
+  async startTask(projectId: string, taskId: string, userId: string) {
+    // TODO: Add method implementation
+  }
+
+  async completeTask(projectId: string, taskId: string, userId: string) {
+    // TODO: Add method implementation
+  }
+
+  async deleteTask(projectId: string, taskId: string, userId: string) {
+    // TODO: Add method implementation
   }
 }

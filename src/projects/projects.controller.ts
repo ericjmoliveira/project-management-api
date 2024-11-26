@@ -17,6 +17,7 @@ import { AddTaskDto } from './dto/add-task.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { InviteUsersDto } from './dto/invite-users.dto';
 import { UpdateMemberRoleDto } from './dto/update-member-role.dto';
+import { UpdateTaskDto } from './dto/update-task.dto';
 
 @Controller('projects')
 @UseGuards(AuthGuard)
@@ -75,6 +76,61 @@ export class ProjectsController {
     return {
       data,
       message: 'Task successfully added to the project.'
+    };
+  }
+
+  @Patch(':projectId/tasks/:taskId')
+  async updateTask(
+    @Request() request: { user: { sub: string } },
+    @Param() params: { projectId: string; taskId: string },
+    @Body() updateTaskDto: UpdateTaskDto
+  ) {
+    const data = await this.projectsService.updateTask(
+      params.projectId,
+      params.taskId,
+      request.user.sub,
+      updateTaskDto
+    );
+
+    return {
+      data,
+      message: 'Task details successfully updated.'
+    };
+  }
+
+  @Post(':projectId/tasks/:taskId/start')
+  async startTask(
+    @Request() request: { user: { sub: string } },
+    @Param() params: { projectId: string; taskId: string }
+  ) {
+    await this.projectsService.startTask(params.projectId, params.taskId, request.user.sub);
+
+    return {
+      message: 'Task successfully started.'
+    };
+  }
+
+  @Post(':projectId/tasks/:taskId/complete')
+  async completeTask(
+    @Request() request: { user: { sub: string } },
+    @Param() params: { projectId: string; taskId: string }
+  ) {
+    await this.projectsService.completeTask(params.projectId, params.taskId, request.user.sub);
+
+    return {
+      message: 'Task successfully completed.'
+    };
+  }
+
+  @Delete(':projectId/tasks/:taskId')
+  async deleteTask(
+    @Request() request: { user: { sub: string } },
+    @Param() params: { projectId: string; taskId: string }
+  ) {
+    await this.projectsService.deleteTask(params.projectId, params.taskId, request.user.sub);
+
+    return {
+      message: 'Task successfully deleted.'
     };
   }
 
