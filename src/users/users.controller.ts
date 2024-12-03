@@ -13,6 +13,8 @@ import {
 import { UsersService } from './users.service';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { RequestDto } from 'src/common/dto/request.dto';
+import { UserParamsDto } from './dto/user-params.dto';
 
 @Controller('users')
 @UseGuards(AuthGuard)
@@ -20,7 +22,7 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Get()
-  async findOne(@Request() request: { user?: { sub: string } }) {
+  async findOne(@Request() request: RequestDto) {
     const data = await this.usersService.findOne(request.user.sub);
 
     return {
@@ -29,7 +31,7 @@ export class UsersController {
   }
 
   @Get('projects')
-  async getProjects(@Request() request: { user?: { sub: string } }) {
+  async getProjects(@Request() request: RequestDto) {
     const data = await this.usersService.getProjects(request.user.sub);
 
     return {
@@ -38,10 +40,7 @@ export class UsersController {
   }
 
   @Patch()
-  async updatePassword(
-    @Request() request: { user?: { sub: string } },
-    @Body() updateUserDto: UpdateUserDto
-  ) {
+  async updatePassword(@Request() request: RequestDto, @Body() updateUserDto: UpdateUserDto) {
     await this.usersService.updatePassword(request.user.sub, updateUserDto);
 
     return {
@@ -51,10 +50,7 @@ export class UsersController {
 
   @Post('invitations/:projectId')
   @HttpCode(200)
-  async acceptProjectInvitation(
-    @Request() request: { user: { sub: string } },
-    @Param() params: { projectId: string }
-  ) {
+  async acceptProjectInvitation(@Request() request: RequestDto, @Param() params: UserParamsDto) {
     await this.usersService.acceptProjectInvitation(request.user.sub, params.projectId);
 
     return {

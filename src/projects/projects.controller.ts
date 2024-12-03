@@ -13,6 +13,8 @@ import {
 import { ProjectsService } from './projects.service';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { AuthGuard } from 'src/auth/auth.guard';
+import { RequestDto } from 'src/common/dto/request.dto';
+import { ProjectParamsDto } from './dto/project-params.dto';
 import { AddTaskDto } from './dto/add-task.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { InviteUsersDto } from './dto/invite-users.dto';
@@ -25,10 +27,7 @@ export class ProjectsController {
   constructor(private readonly projectsService: ProjectsService) {}
 
   @Post()
-  async create(
-    @Request() request: { user: { sub: string } },
-    @Body() createProjectDto: CreateProjectDto
-  ) {
+  async create(@Request() request: RequestDto, @Body() createProjectDto: CreateProjectDto) {
     const data = await this.projectsService.create(request.user.sub, createProjectDto);
 
     return {
@@ -37,12 +36,9 @@ export class ProjectsController {
     };
   }
 
-  @Post(':id/start')
+  @Post(':projectId/start')
   @HttpCode(200)
-  async start(
-    @Request() request: { user: { sub: string } },
-    @Param() params: { projectId: string }
-  ) {
+  async start(@Request() request: RequestDto, @Param() params: ProjectParamsDto) {
     const data = await this.projectsService.start(params.projectId, request.user.sub);
 
     return {
@@ -51,13 +47,17 @@ export class ProjectsController {
     };
   }
 
-  @Patch(':id')
+  @Patch(':projectId')
   async update(
-    @Request() request: { user: { sub: string } },
-    @Param() params: { id: string },
+    @Request() request: RequestDto,
+    @Param() params: ProjectParamsDto,
     @Body() updateProjectDto: UpdateProjectDto
   ) {
-    const data = await this.projectsService.update(params.id, updateProjectDto, request.user.sub);
+    const data = await this.projectsService.update(
+      params.projectId,
+      updateProjectDto,
+      request.user.sub
+    );
 
     return {
       data,
@@ -65,13 +65,13 @@ export class ProjectsController {
     };
   }
 
-  @Post(':id/tasks')
+  @Post(':projectId/tasks')
   async addTask(
-    @Request() request: { user: { sub: string } },
-    @Param() params: { id: string },
+    @Request() request: RequestDto,
+    @Param() params: ProjectParamsDto,
     @Body() addTaskDto: AddTaskDto
   ) {
-    const data = await this.projectsService.addTask(params.id, addTaskDto, request.user.sub);
+    const data = await this.projectsService.addTask(params.projectId, addTaskDto, request.user.sub);
 
     return {
       data,
@@ -81,8 +81,8 @@ export class ProjectsController {
 
   @Patch(':projectId/tasks/:taskId')
   async updateTask(
-    @Request() request: { user: { sub: string } },
-    @Param() params: { projectId: string; taskId: string },
+    @Request() request: RequestDto,
+    @Param() params: ProjectParamsDto,
     @Body() updateTaskDto: UpdateTaskDto
   ) {
     const data = await this.projectsService.updateTask(
@@ -100,10 +100,7 @@ export class ProjectsController {
 
   @Post(':projectId/tasks/:taskId/start')
   @HttpCode(200)
-  async startTask(
-    @Request() request: { user: { sub: string } },
-    @Param() params: { projectId: string; taskId: string }
-  ) {
+  async startTask(@Request() request: RequestDto, @Param() params: ProjectParamsDto) {
     await this.projectsService.startTask(params.projectId, params.taskId, request.user.sub);
 
     return {
@@ -113,10 +110,7 @@ export class ProjectsController {
 
   @Post(':projectId/tasks/:taskId/complete')
   @HttpCode(200)
-  async completeTask(
-    @Request() request: { user: { sub: string } },
-    @Param() params: { projectId: string; taskId: string }
-  ) {
+  async completeTask(@Request() request: RequestDto, @Param() params: ProjectParamsDto) {
     await this.projectsService.completeTask(params.projectId, params.taskId, request.user.sub);
 
     return {
@@ -125,10 +119,7 @@ export class ProjectsController {
   }
 
   @Delete(':projectId/tasks/:taskId')
-  async deleteTask(
-    @Request() request: { user: { sub: string } },
-    @Param() params: { projectId: string; taskId: string }
-  ) {
+  async deleteTask(@Request() request: RequestDto, @Param() params: ProjectParamsDto) {
     await this.projectsService.deleteTask(params.projectId, params.taskId, request.user.sub);
 
     return {
@@ -136,28 +127,28 @@ export class ProjectsController {
     };
   }
 
-  @Post(':id/invite')
+  @Post(':projectId/invite')
   @HttpCode(200)
   async inviteUsers(
-    @Request() request: { user: { sub: string } },
-    @Param() params: { id: string },
+    @Request() request: RequestDto,
+    @Param() params: ProjectParamsDto,
     @Body() inviteUsersDto: InviteUsersDto
   ) {
-    await this.projectsService.inviteUsers(params.id, inviteUsersDto, request.user.sub);
+    await this.projectsService.inviteUsers(params.projectId, inviteUsersDto, request.user.sub);
 
     return {
       message: 'Invitations successfully sent.'
     };
   }
 
-  @Patch(':id/members')
+  @Patch(':projectId/members')
   async updateMemberRole(
-    @Request() request: { user: { sub: string } },
-    @Param() params: { id: string },
+    @Request() request: RequestDto,
+    @Param() params: ProjectParamsDto,
     @Body() updateMemberRoleDto: UpdateMemberRoleDto
   ) {
     const data = await this.projectsService.updateMemberRole(
-      params.id,
+      params.projectId,
       updateMemberRoleDto,
       request.user.sub
     );
@@ -169,10 +160,7 @@ export class ProjectsController {
   }
 
   @Delete(':projectId/members/:memberId')
-  async removeMember(
-    @Request() request: { user: { sub: string } },
-    @Param() params: { projectId: string; memberId: string }
-  ) {
+  async removeMember(@Request() request: RequestDto, @Param() params: ProjectParamsDto) {
     await this.projectsService.removeMember(params.projectId, params.memberId, request.user.sub);
 
     return {
@@ -180,9 +168,9 @@ export class ProjectsController {
     };
   }
 
-  @Delete(':id')
-  async delete(@Request() request: { user: { sub: string } }, @Param() params: { id: string }) {
-    const data = await this.projectsService.delete(params.id, request.user.sub);
+  @Delete(':projectId')
+  async delete(@Request() request: RequestDto, @Param() params: ProjectParamsDto) {
+    const data = await this.projectsService.delete(params.projectId, request.user.sub);
 
     return {
       data,
