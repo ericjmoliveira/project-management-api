@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { Role } from '@prisma/client';
 
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from 'src/common/prisma/prisma.service';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { InviteUsersDto } from './dto/invite-users.dto';
