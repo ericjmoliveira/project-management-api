@@ -57,7 +57,7 @@ export class ProjectsController {
     @Param() params: { id: string },
     @Body() updateProjectDto: UpdateProjectDto
   ) {
-    const data = await this.projectsService.update(request.user.sub, params.id, updateProjectDto);
+    const data = await this.projectsService.update(params.id, updateProjectDto, request.user.sub);
 
     return {
       data,
@@ -71,7 +71,7 @@ export class ProjectsController {
     @Param() params: { id: string },
     @Body() addTaskDto: AddTaskDto
   ) {
-    const data = await this.projectsService.addTask(params.id, request.user.sub, addTaskDto);
+    const data = await this.projectsService.addTask(params.id, addTaskDto, request.user.sub);
 
     return {
       data,
@@ -88,8 +88,8 @@ export class ProjectsController {
     const data = await this.projectsService.updateTask(
       params.projectId,
       params.taskId,
-      request.user.sub,
-      updateTaskDto
+      updateTaskDto,
+      request.user.sub
     );
 
     return {
@@ -143,7 +143,7 @@ export class ProjectsController {
     @Param() params: { id: string },
     @Body() inviteUsersDto: InviteUsersDto
   ) {
-    await this.projectsService.inviteUsers(params.id, request.user.sub, inviteUsersDto);
+    await this.projectsService.inviteUsers(params.id, inviteUsersDto, request.user.sub);
 
     return {
       message: 'Invitations successfully sent.'
@@ -158,8 +158,8 @@ export class ProjectsController {
   ) {
     const data = await this.projectsService.updateMemberRole(
       params.id,
-      request.user.sub,
-      updateMemberRoleDto
+      updateMemberRoleDto,
+      request.user.sub
     );
 
     return {
@@ -173,11 +173,7 @@ export class ProjectsController {
     @Request() request: { user: { sub: string } },
     @Param() params: { projectId: string; memberId: string }
   ) {
-    const data = await this.projectsService.removeMember(
-      params.projectId,
-      request.user.sub,
-      params.memberId
-    );
+    await this.projectsService.removeMember(params.projectId, params.memberId, request.user.sub);
 
     return {
       message: 'Member successfully removed.'

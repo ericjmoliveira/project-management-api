@@ -62,15 +62,9 @@ export class ProjectsService {
       throw new NotFoundException();
     }
 
-    const isProjectOwner = await this.prismaService.projectMember.findFirst({
-      where: {
-        projectId: project.id,
-        userId,
-        role: 'OWNER'
-      }
-    });
+    const hasPermission = await this.isProjectOwner(projectId, userId);
 
-    if (!isProjectOwner) {
+    if (!hasPermission) {
       throw new ForbiddenException();
     }
 
@@ -93,7 +87,7 @@ export class ProjectsService {
     };
   }
 
-  async update(userId: string, projectId: string, updateProjectDto: UpdateProjectDto) {
+  async update(projectId: string, updateProjectDto: UpdateProjectDto, userId: string) {
     const project = await this.prismaService.project.findFirst({
       where: {
         id: projectId
@@ -104,13 +98,7 @@ export class ProjectsService {
       throw new NotFoundException();
     }
 
-    const isProjectOwnerOrAdmin = await this.prismaService.projectMember.findFirst({
-      where: {
-        projectId: project.id,
-        userId,
-        role: { in: ['OWNER', 'ADMIN'] }
-      }
-    });
+    const isProjectOwnerOrAdmin = await this.isProjectOwnerOrAdmin(projectId, userId);
 
     if (!isProjectOwnerOrAdmin) {
       throw new ForbiddenException();
@@ -128,7 +116,7 @@ export class ProjectsService {
     };
   }
 
-  async addTask(projectId: string, userId: string, addTaskDto: AddTaskDto) {
+  async addTask(projectId: string, addTaskDto: AddTaskDto, userId: string) {
     const project = await this.prismaService.project.findFirst({
       where: {
         id: projectId
@@ -139,17 +127,9 @@ export class ProjectsService {
       throw new NotFoundException();
     }
 
-    const isProjectOwnerOrAdmin = await this.prismaService.projectMember.findFirst({
-      where: {
-        projectId: project.id,
-        userId,
-        role: {
-          in: ['OWNER', 'ADMIN']
-        }
-      }
-    });
+    const hasPermission = await this.isProjectOwnerOrAdmin(projectId, userId);
 
-    if (!isProjectOwnerOrAdmin) {
+    if (!hasPermission) {
       throw new ForbiddenException();
     }
 
@@ -165,7 +145,7 @@ export class ProjectsService {
     };
   }
 
-  async inviteUsers(projectId: string, userId: string, inviteUsersDto: InviteUsersDto) {
+  async inviteUsers(projectId: string, inviteUsersDto: InviteUsersDto, userId: string) {
     const project = await this.prismaService.project.findFirst({
       where: {
         id: projectId
@@ -176,17 +156,9 @@ export class ProjectsService {
       throw new NotFoundException();
     }
 
-    const isProjectOwnerOrAdmin = await this.prismaService.projectMember.findFirst({
-      where: {
-        projectId: project.id,
-        userId,
-        role: {
-          in: ['OWNER', 'ADMIN']
-        }
-      }
-    });
+    const hasPermission = await this.isProjectOwnerOrAdmin(projectId, userId);
 
-    if (!isProjectOwnerOrAdmin) {
+    if (!hasPermission) {
       throw new ForbiddenException();
     }
 
@@ -226,15 +198,9 @@ export class ProjectsService {
       throw new NotFoundException();
     }
 
-    const isProjectOwner = await this.prismaService.projectMember.findFirst({
-      where: {
-        projectId: project.id,
-        userId,
-        role: { in: ['OWNER', 'ADMIN'] }
-      }
-    });
+    const hasPermission = await this.isProjectOwner(projectId, userId);
 
-    if (!isProjectOwner) {
+    if (!hasPermission) {
       throw new ForbiddenException();
     }
 
@@ -247,8 +213,8 @@ export class ProjectsService {
 
   async updateMemberRole(
     projectId: string,
-    userId: string,
-    updateMemberRoleDto: UpdateMemberRoleDto
+    updateMemberRoleDto: UpdateMemberRoleDto,
+    userId: string
   ) {
     const project = await this.prismaService.project.findFirst({
       where: {
@@ -260,15 +226,9 @@ export class ProjectsService {
       throw new NotFoundException();
     }
 
-    const isProjectOwnerOrAdmin = await this.prismaService.projectMember.findFirst({
-      where: {
-        projectId: project.id,
-        userId,
-        role: { in: ['OWNER', 'ADMIN'] }
-      }
-    });
+    const hasPermission = await this.isProjectOwnerOrAdmin(projectId, userId);
 
-    if (!isProjectOwnerOrAdmin) {
+    if (!hasPermission) {
       throw new ForbiddenException();
     }
 
@@ -296,7 +256,7 @@ export class ProjectsService {
     };
   }
 
-  async removeMember(projectId: string, userId: string, memberId: string) {
+  async removeMember(projectId: string, memberId: string, userId: string) {
     const project = await this.prismaService.project.findFirst({
       where: {
         id: projectId
@@ -307,15 +267,9 @@ export class ProjectsService {
       throw new NotFoundException();
     }
 
-    const isProjectOwnerOrAdmin = await this.prismaService.projectMember.findFirst({
-      where: {
-        projectId: project.id,
-        userId,
-        role: { in: ['OWNER', 'ADMIN'] }
-      }
-    });
+    const hasPermission = await this.isProjectOwnerOrAdmin(projectId, userId);
 
-    if (!isProjectOwnerOrAdmin) {
+    if (!hasPermission) {
       throw new ForbiddenException();
     }
 
@@ -339,8 +293,8 @@ export class ProjectsService {
   async updateTask(
     projectId: string,
     taskId: string,
-    userId: string,
-    updateTaskDto: UpdateTaskDto
+    updateTaskDto: UpdateTaskDto,
+    userId: string
   ) {
     const project = await this.prismaService.project.findFirst({
       where: {
@@ -352,15 +306,9 @@ export class ProjectsService {
       throw new NotFoundException();
     }
 
-    const isProjectOwnerOrAdmin = await this.prismaService.projectMember.findFirst({
-      where: {
-        projectId: project.id,
-        userId,
-        role: { in: ['OWNER', 'ADMIN'] }
-      }
-    });
+    const hasPermission = await this.isProjectOwnerOrAdmin(projectId, userId);
 
-    if (!isProjectOwnerOrAdmin) {
+    if (!hasPermission) {
       throw new ForbiddenException();
     }
 
@@ -387,15 +335,9 @@ export class ProjectsService {
       throw new NotFoundException();
     }
 
-    const isProjectOwnerOrAdmin = await this.prismaService.projectMember.findFirst({
-      where: {
-        projectId: project.id,
-        userId,
-        role: { in: ['OWNER', 'ADMIN'] }
-      }
-    });
+    const hasPermission = await this.isProjectMember(projectId, userId);
 
-    if (!isProjectOwnerOrAdmin) {
+    if (!hasPermission) {
       throw new ForbiddenException();
     }
 
@@ -435,15 +377,9 @@ export class ProjectsService {
       throw new NotFoundException();
     }
 
-    const isProjectOwnerOrAdmin = await this.prismaService.projectMember.findFirst({
-      where: {
-        projectId: project.id,
-        userId,
-        role: { in: ['OWNER', 'ADMIN'] }
-      }
-    });
+    const hasPermission = await this.isProjectMember(projectId, userId);
 
-    if (!isProjectOwnerOrAdmin) {
+    if (!hasPermission) {
       throw new ForbiddenException();
     }
 
@@ -483,15 +419,9 @@ export class ProjectsService {
       throw new NotFoundException();
     }
 
-    const isProjectOwnerOrAdmin = await this.prismaService.projectMember.findFirst({
-      where: {
-        projectId: project.id,
-        userId,
-        role: { in: ['OWNER', 'ADMIN'] }
-      }
-    });
+    const hasPermission = await this.isProjectOwnerOrAdmin(projectId, userId);
 
-    if (!isProjectOwnerOrAdmin) {
+    if (!hasPermission) {
       throw new ForbiddenException();
     }
 
@@ -510,5 +440,45 @@ export class ProjectsService {
         id: taskId
       }
     });
+  }
+
+  private async isProjectOwner(projectId: string, userId: string) {
+    const hasPermission = await this.prismaService.projectMember.findFirst({
+      where: {
+        projectId,
+        userId,
+        role: 'OWNER',
+        status: 'ACTIVE'
+      }
+    });
+
+    return !!hasPermission;
+  }
+
+  private async isProjectOwnerOrAdmin(projectId: string, userId: string) {
+    const hasPermission = await this.prismaService.projectMember.findFirst({
+      where: {
+        projectId,
+        userId,
+        role: {
+          in: ['OWNER', 'ADMIN']
+        },
+        status: 'ACTIVE'
+      }
+    });
+
+    return !!hasPermission;
+  }
+
+  private async isProjectMember(projectId: string, userId: string) {
+    const hasPermission = await this.prismaService.projectMember.findFirst({
+      where: {
+        projectId,
+        userId,
+        status: 'ACTIVE'
+      }
+    });
+
+    return !!hasPermission;
   }
 }
