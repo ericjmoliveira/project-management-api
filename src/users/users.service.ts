@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { compare, hash } from 'bcrypt';
 
-import { PrismaService } from 'src/common/prisma/prisma.service';
+import { PrismaService } from '../common/prisma/prisma.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
@@ -119,6 +119,10 @@ export class UsersService {
         userId
       }
     });
+
+    if (!memberData) {
+      throw new NotFoundException();
+    }
 
     if (memberData.joinedAt && memberData.status === 'ACTIVE') {
       throw new ConflictException();

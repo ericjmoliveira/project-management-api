@@ -10,7 +10,7 @@ import { hash, compare } from 'bcrypt';
 
 import { SignInDto } from './dto/sign-in.dto';
 import { SignUpDto } from './dto/sign-up.dto';
-import { PrismaService } from 'src/common/prisma/prisma.service';
+import { PrismaService } from '../common/prisma/prisma.service';
 
 @Injectable()
 export class AuthService {

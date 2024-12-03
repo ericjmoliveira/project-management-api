@@ -9,9 +9,9 @@ export class CreateProjectDto {
   @IsOptional()
   @IsString()
   @MinLength(2)
-  description: string;
+  description?: string;
 
   @IsOptional()
   @IsDateString()
-  dueDate: string;
+  dueDate?: string;
 }

@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { Role } from '@prisma/client';
 
-import { PrismaService } from 'src/common/prisma/prisma.service';
+import { PrismaService } from '../common/prisma/prisma.service';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { InviteUsersDto } from './dto/invite-users.dto';
@@ -62,14 +62,14 @@ export class ProjectsService {
       throw new NotFoundException();
     }
 
+    if (project.startedAt && project.status === 'ACTIVE') {
+      throw new ConflictException();
+    }
+
     const hasPermission = await this.isProjectOwner(projectId, userId);
 
     if (!hasPermission) {
       throw new ForbiddenException();
-    }
-
-    if (project.startedAt && project.status === 'ACTIVE') {
-      throw new ConflictException();
     }
 
     const updatedProject = await this.prismaService.project.update({
