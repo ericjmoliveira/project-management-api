@@ -1,7 +1,7 @@
 import { NotFoundException, ForbiddenException, ConflictException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 
-import { PrismaService } from '../common/prisma/prisma.service';
+import { PrismaService } from '../common/database/prisma/prisma.service';
 import { ProjectsService } from './projects.service';
 
 describe('ProjectsService', () => {

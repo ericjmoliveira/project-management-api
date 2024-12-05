@@ -1,13 +1,11 @@
-import {
-  ConflictException,
-  Injectable,
-  NotFoundException,
-  UnauthorizedException
-} from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { compare, hash } from 'bcrypt';
 
-import { PrismaService } from '../common/prisma/prisma.service';
+import { PrismaService } from '../common/database/prisma/prisma.service';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { UserNotFoundException } from '../common/http/exceptions/user-not-found.exception';
+import { InvalidCredentialsException } from '../common/http/exceptions/invalid-credentials.exception';
+import { ProjectNotFoundException } from '../common/http/exceptions/project-not-found.exception';
 
 @Injectable()
 export class UsersService {
@@ -30,7 +28,7 @@ export class UsersService {
     });
 
     if (!user) {
-      throw new NotFoundException();
+      throw new UserNotFoundException();
     }
 
     return {
@@ -46,7 +44,7 @@ export class UsersService {
     });
 
     if (!user) {
-      throw new NotFoundException();
+      throw new UserNotFoundException();
     }
 
     const ownedProjects = await this.prismaService.project.findMany({
@@ -79,13 +77,13 @@ export class UsersService {
     });
 
     if (!user) {
-      throw new NotFoundException();
+      throw new UserNotFoundException();
     }
 
     const isPasswordCorrect = await compare(updateUserDto.currentPassword, user.password);
 
     if (!isPasswordCorrect) {
-      throw new UnauthorizedException();
+      throw new InvalidCredentialsException();
     }
 
     delete updateUserDto.currentPassword;
@@ -110,7 +108,7 @@ export class UsersService {
     });
 
     if (!project) {
-      throw new NotFoundException();
+      throw new ProjectNotFoundException();
     }
 
     const memberData = await this.prismaService.projectMember.findFirst({
@@ -121,11 +119,11 @@ export class UsersService {
     });
 
     if (!memberData) {
-      throw new NotFoundException();
+      throw new NotFoundException('Member not found.');
     }
 
     if (memberData.joinedAt && memberData.status === 'ACTIVE') {
-      throw new ConflictException();
+      throw new ConflictException('Invitation already accepted.');
     }
 
     await this.prismaService.projectMember.update({

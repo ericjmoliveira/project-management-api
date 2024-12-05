@@ -13,7 +13,7 @@ import {
 import { UsersService } from './users.service';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { RequestDto } from 'src/common/dto/request.dto';
+import { RequestDto } from 'src/common/http/dto/request.dto';
 import { UserParamsDto } from './dto/user-params.dto';
 
 @Controller('users')

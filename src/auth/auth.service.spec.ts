@@ -9,7 +9,7 @@ import { JwtService } from '@nestjs/jwt';
 import { hash, compare } from 'bcrypt';
 
 import { AuthService } from './auth.service';
-import { PrismaService } from '../common/prisma/prisma.service';
+import { PrismaService } from '../common/database/prisma/prisma.service';
 import { SignInDto } from './dto/sign-in.dto';
 import { SignUpDto } from './dto/sign-up.dto';
 

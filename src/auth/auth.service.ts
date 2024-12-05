@@ -1,16 +1,13 @@
-import {
-  ConflictException,
-  Injectable,
-  NotFoundException,
-  UnauthorizedException,
-  UnprocessableEntityException
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { hash, compare } from 'bcrypt';
 
 import { SignInDto } from './dto/sign-in.dto';
 import { SignUpDto } from './dto/sign-up.dto';
-import { PrismaService } from '../common/prisma/prisma.service';
+import { PrismaService } from '../common/database/prisma/prisma.service';
+import { InvalidCredentialsException } from '../common/http/exceptions/invalid-credentials.exception';
+import { EmailAlreadyInUseException } from '../common/http/exceptions/email-already-in-use-exception';
+import { PasswordsDoNotMatchException } from '../common/http/exceptions/passwords-do-not-match.exception';
 
 @Injectable()
 export class AuthService {
@@ -27,13 +24,13 @@ export class AuthService {
     });
 
     if (!user) {
-      throw new NotFoundException();
+      throw new InvalidCredentialsException();
     }
 
     const isPasswordCorrect = await compare(signInDto.password, user.password);
 
     if (!isPasswordCorrect) {
-      throw new UnauthorizedException();
+      throw new InvalidCredentialsException();
     }
 
     delete user.password;
@@ -48,17 +45,17 @@ export class AuthService {
 
   async signUp(signUpDto: SignUpDto) {
     if (signUpDto.password !== signUpDto.confirmPassword) {
-      throw new UnprocessableEntityException();
+      throw new PasswordsDoNotMatchException();
     }
 
-    const isEmailAlreadyAssociated = await this.prismaService.user.findUnique({
+    const isEmailAlreadyInUse = await this.prismaService.user.findUnique({
       where: {
         email: signUpDto.email
       }
     });
 
-    if (isEmailAlreadyAssociated) {
-      throw new ConflictException();
+    if (isEmailAlreadyInUse) {
+      throw new EmailAlreadyInUseException();
     }
 
     const hashPassword = await hash(signUpDto.password, 10);

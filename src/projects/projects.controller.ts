@@ -12,8 +12,8 @@ import {
 
 import { ProjectsService } from './projects.service';
 import { CreateProjectDto } from './dto/create-project.dto';
-import { AuthGuard } from 'src/auth/auth.guard';
-import { RequestDto } from 'src/common/dto/request.dto';
+import { AuthGuard } from '../auth/auth.guard';
+import { RequestDto } from '../common/http/dto/request.dto';
 import { ProjectParamsDto } from './dto/project-params.dto';
 import { AddTaskDto } from './dto/add-task.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';

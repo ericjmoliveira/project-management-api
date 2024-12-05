@@ -1,4 +1,4 @@
-import { PrismaService } from '../common/prisma/prisma.service';
+import { PrismaService } from '../common/database/prisma/prisma.service';
 import { UsersService } from './users.service';
 import { ConflictException, NotFoundException } from '@nestjs/common';
 
