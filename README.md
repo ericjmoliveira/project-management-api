@@ -9,7 +9,7 @@ This is a **Project Management API** built using **NestJS** and **Prisma ORM**, 
 3. [Setup](#setup)
 4. [API Documentation](#api-documentation)
 5. [Authentication](#authentication)
-6. [RBAC](#rbac)
+6. [RBAC (Role-Based Access Control)](#rbac-role-based-access-control)
 7. [Environment Variables](#environment-variables)
 8. [Running Tests](#running-tests)
 
@@ -133,12 +133,14 @@ Roles and permissions are defined as follows:
 ### Roles and Permissions:
 
 - **OWNER**:
+
   - Can create, update, delete, and manage projects and tasks.
   - Can invite and remove members.
   - Can start and complete tasks.
   - Full control over project and task management.
 
 - **ADMIN**:
+
   - Can update project details.
   - Can create, update, delete, and manage tasks.
   - Can invite and remove members.
